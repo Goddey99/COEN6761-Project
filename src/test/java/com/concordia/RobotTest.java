@@ -1,12 +1,165 @@
 package com.concordia;
 
 import org.junit.jupiter.api.*;
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+class RobotTest {
+        @Test
+        void printCurrentStateCoversAllBranches() {
+            Robot r = new Robot(2);
+            // Pen up, facing NORTH
+            r.printCurrentState();
+            // Pen down, facing EAST
+            r.setPenDown(true);
+            r.turnRight();
+            r.printCurrentState();
+            // Pen down, facing SOUTH
+            r.turnRight();
+            r.printCurrentState();
+            // Pen up, facing WEST
+            r.setPenDown(false);
+            r.turnRight();
+            r.printCurrentState();
+        }
+
+        @Test
+        void moveCoversAllBranches() {
+            Robot r = new Robot(2);
+            // Move North to boundary
+            r.move(5);
+            assertEquals(0, r.getX());
+            assertEquals(1, r.getY());
+            // Move East to boundary
+            r.turnRight();
+            r.move(5);
+            assertEquals(1, r.getX());
+            assertEquals(1, r.getY());
+            // Move South to boundary
+            r.turnRight();
+            r.move(5);
+            assertEquals(1, r.getX());
+            assertEquals(0, r.getY());
+            // Move West to boundary
+            r.turnRight();
+            r.move(5);
+            assertEquals(0, r.getX());
+            assertEquals(0, r.getY());
+            // Try moving with pen up and down
+            r.setPenDown(false);
+            r.move(1);
+            r.setPenDown(true);
+            r.move(1);
+        }
+    @Test
+    void moveCoversAllDirections() {
+        Robot r = new Robot(5);
+        r.setPenDown(true);
+        // Move North
+        r.move(1);
+        assertEquals(0, r.getX());
+        assertEquals(1, r.getY());
+        // Turn East and move
+        r.turnRight();
+        r.move(1);
+        assertEquals(1, r.getX());
+        assertEquals(1, r.getY());
+        // Turn South and move
+        r.turnRight();
+        r.move(1);
+        assertEquals(1, r.getX());
+        assertEquals(0, r.getY());
+        // Turn West and move
+        r.turnRight();
+        r.move(1);
+        assertEquals(0, r.getX());
+        assertEquals(0, r.getY());
+    }
+
+    @Test
+    void robotControllerCoversUPenAndLeft() {
+        RobotController c = new RobotController(3);
+        c.execute("I 3");
+        c.execute("U"); // Pen up
+        c.execute("L"); // Turn left
+        Robot r = c.getRobot();
+        assertFalse(r.isPenDown());
+        assertEquals(Robot.Direction.WEST, r.getFacing());
+    }
+
+    @Test
+    void getSizeIsCovered() {
+        Robot r = new Robot(4);
+        assertEquals(4, r.getSize());
+    }
+    // ...merge all test methods from RobotExtraCoverageTest and RobotControllerAssignmentTest here...
+    @Test
+    void robotConstructorThrowsOnInvalidSize() {
+        assertThrows(IllegalArgumentException.class, () -> new Robot(0));
+        assertThrows(IllegalArgumentException.class, () -> new Robot(-5));
+    }
+
+    @Test
+    void moveStopsAtBoundary() {
+        Robot r = new Robot(3);
+        r.setPenDown(true);
+        r.move(10); // Should stop at boundary
+        assertEquals(0, r.getX());
+        assertEquals(2, r.getY());
+    }
+
+    @Test
+    void turnLeftAndRightCoversAllDirections() {
+        Robot r = new Robot(2);
+        for (int i = 0; i < 4; i++) r.turnRight();
+        assertEquals(Robot.Direction.NORTH, r.getFacing());
+        for (int i = 0; i < 4; i++) r.turnLeft();
+        assertEquals(Robot.Direction.NORTH, r.getFacing());
+    }
+
+    @Test
+    void setPenDownMarksCurrentSpot() {
+        Robot r = new Robot(2);
+        r.setPenDown(true);
+        assertEquals(1, r.getFloor()[0][0]);
+        r.setPenDown(false);
+        r.setPenDown(true);
+        assertEquals(1, r.getFloor()[0][0]);
+    }
+
+    @Test
+    void printCurrentStateAndFloorNoCrash() {
+        Robot r = new Robot(2);
+        r.printCurrentState();
+        r.printFloor();
+    }
+
+    @Test
+    void addToHistoryAndGetHistory() {
+        Robot r = new Robot(2);
+        r.addToHistory("I 2");
+        r.addToHistory("D");
+        assertEquals(2, r.getHistory().size());
+        assertEquals("I 2", r.getHistory().get(0));
+    }
+
+    @Test
+    void robotControllerInvalidCommand() {
+        RobotController c = new RobotController(2);
+        c.execute("");
+        c.execute(null);
+        c.execute("Z"); // Invalid command
+    }
+
+    @Test
+    void robotControllerQuitAndHistory() {
+        RobotController c = new RobotController(2);
+        c.execute("Q");
+        c.execute("H");
+    }
+}
 
 class RobotControllerAssignmentTest {
 
